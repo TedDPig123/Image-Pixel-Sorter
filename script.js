@@ -59,6 +59,25 @@ document.getElementById('upload').addEventListener('change', function (event) {
             const data = imageData.data;
             const width = canvas.width;
 
+            const greyImg =  img.grey();
+            const greyData = greyImg.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                let contrastFactor = 1.2; // Increase or decrease this shit to control contrast strength
+                greyData[i] = Math.min(255, Math.max(0, data[i] * contrastFactor));
+                greyData[i + 1] = Math.min(255, Math.max(0, data[i + 1] * contrastFactor));
+                greyData[i + 2] = Math.min(255, Math.max(0, data[i + 2] * contrastFactor));
+            }
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                const gray = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        
+                data[i] = data[i + 1] = data[i + 2] = gray;
+            }
+
             for (let y = 0; y < canvas.height; y++) { //going through rows
                 let maxLumIndex = 0;
                 let row = [];
@@ -75,7 +94,7 @@ document.getElementById('upload').addEventListener('change', function (event) {
 
                 //let sortedRow = row.slice(0, maxLumIndex).concat(sortRowByLuminance(row.slice(maxLumIndex)));
                 
-                let sortedRow = sortRowByLuminance(row.slice(maxLumIndex));
+                let sortedRow = sortRowByLuminance(row);
                 for (let x = 0; x < width; x++) {
                     const index = (y * width + x) * 4;
                     data[index] = sortedRow[x][0];
