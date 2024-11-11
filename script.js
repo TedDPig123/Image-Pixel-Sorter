@@ -43,6 +43,29 @@ function sortRowByLuminance(row) {
     });
 }
 
+function findWhiteParts(row){
+    let arr = [];
+    toggle = false;
+    for(let i=0;i<row.length;i++){
+        if(row[i][0] === 255){ //if current pixel is white
+            if(toggle === false){
+                toggle === true;
+                arr.push(i);
+            }
+            if(toggle === true && i===row.length-1){
+                arr.push(i);
+            }
+        }
+        if(row[i][0] === 0){ //if current pixel is black
+            if(toggle === true){ //if previous pixel was white
+                arr.push(i);
+                toggle = false;
+            }
+        }
+    }
+    return arr;
+}
+
 document.getElementById('upload').addEventListener('change', function (event) {
     const file = event.target.files[0];
     const canvas = document.getElementById('canvas');
@@ -59,25 +82,6 @@ document.getElementById('upload').addEventListener('change', function (event) {
             const data = imageData.data;
             const width = canvas.width;
 
-            const greyImg =  img.grey();
-            const greyData = greyImg.data;
-
-            for (let i = 0; i < data.length; i += 4) {
-                let contrastFactor = 1.2; // Increase or decrease this shit to control contrast strength
-                greyData[i] = Math.min(255, Math.max(0, data[i] * contrastFactor));
-                greyData[i + 1] = Math.min(255, Math.max(0, data[i + 1] * contrastFactor));
-                greyData[i + 2] = Math.min(255, Math.max(0, data[i + 2] * contrastFactor));
-            }
-
-            for (let i = 0; i < data.length; i += 4) {
-                const r = data[i];
-                const g = data[i + 1];
-                const b = data[i + 2];
-                const gray = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-        
-                data[i] = data[i + 1] = data[i + 2] = gray;
-            }
-
             for (let y = 0; y < canvas.height; y++) { //going through rows
                 let maxLumIndex = 0;
                 let row = [];
@@ -90,9 +94,28 @@ document.getElementById('upload').addEventListener('change', function (event) {
                     row.push([r, g, b]);
                 }
                 
-                maxLumIndex = getIndexOfMaxLuminanceValue(row);
+                let greyScaleRow = [];
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    const grey = getLuminance(r, g, b);
+                    greyScaleRow.push([grey,grey,grey]);
+                }
+                
+                const thresholdVal = 128;
+                for (let i = 0; i < data.length; i += 4) {
+                    const pixelVal = greyScaleRow[i];
+                    if(pixelVal >= threshold){
+                        greyScaleRow[i] = greyScaleRow[i+1] = greyScaleRow[i+2] = 255;
+                    }else{
+                        greyScaleRow[i] = greyScaleRow[i + 1] = greyScaleRow[i + 2] = 0;
+                    }
+                }
 
-                //let sortedRow = row.slice(0, maxLumIndex).concat(sortRowByLuminance(row.slice(maxLumIndex)));
+                //now, keep sorting each white spot line
+
+                maxLumIndex = getIndexOfMaxLuminanceValue(row);
                 
                 let sortedRow = sortRowByLuminance(row);
                 for (let x = 0; x < width; x++) {
