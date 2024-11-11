@@ -90,7 +90,7 @@ document.getElementById('upload').addEventListener('change', function (event) {
             // canvas.width = img.width;
             // canvas.height = img.height;
             // ctx.drawImage(img, 0, 0);
-            const newWidth = 500;
+            const newWidth = 300;
             const aspectRatio = img.height / img.width;
             const newHeight = newWidth * aspectRatio;
             
@@ -101,7 +101,6 @@ document.getElementById('upload').addEventListener('change', function (event) {
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
             const width = newWidth;
-            
             
 
             for (let y = 0; y < canvas.height; y++) { //going through rows
