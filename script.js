@@ -87,16 +87,24 @@ document.getElementById('upload').addEventListener('change', function (event) {
     if (file) {
         const img = new Image();
         img.onload = function () {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
+            // canvas.width = img.width;
+            // canvas.height = img.height;
+            // ctx.drawImage(img, 0, 0);
+            const newWidth = 500;
+            const aspectRatio = img.height / img.width;
+            const newHeight = newWidth * aspectRatio;
+            
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
-            const width = canvas.width;
+            const width = newWidth;
+            
+            
 
             for (let y = 0; y < canvas.height; y++) { //going through rows
-                let maxLumIndex = 0;
                 let row = [];
 
                 for (let x = 0; x < width; x++) { //going through columns of row to get rgb data
@@ -117,7 +125,7 @@ document.getElementById('upload').addEventListener('change', function (event) {
                     greyScaleRow.push([grey,grey,grey]);
                 }
                 
-                const thresholdVal = 128;
+                const thresholdVal = 40; //change threshold val for different results
                 for (let i = 0; i < data.length; i++) {
                     const pixelVal = greyScaleRow[i][0];
                     if(pixelVal >= thresholdVal){
@@ -129,8 +137,6 @@ document.getElementById('upload').addEventListener('change', function (event) {
                 
                 let contrastMask = findWhiteParts(greyScaleRow);
                 let sortedRow = sortOnlyWhiteParts(row, contrastMask);
-
-                //maxLumIndex = getIndexOfMaxLuminanceValue(row);
                 
                 for (let x = 0; x < width; x++) {
                     const index = (y * width + x) * 4;
